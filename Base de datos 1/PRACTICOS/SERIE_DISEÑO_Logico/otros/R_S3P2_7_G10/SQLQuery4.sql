@@ -1,0 +1,98 @@
+
+CREATE TABLE DIRECTOR(
+	id_director INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	nombre_director VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE ACTORES(
+	id_actor INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	nombre_actor VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE RATING(
+	id_rating INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	descripcion_rating VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE PAIS_PRODUCCION(
+	id_pais INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	nombre_pais VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE GENERO_TITULO(
+	id_genero INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	descripcion_genero VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE TIPO(
+	id_tipo INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	descripcion_tipo VARCHAR(50) NOT NULL
+)
+
+GO
+
+
+CREATE TABLE TITULO (
+	id_titulo int IDENTITY(1,1) primary key NOT NULL,
+	nombre_titulo VARCHAR (50) NOT NULL,
+	fecha_ingreso DATE NOT NULL ,
+	descripcion_titulo VARCHAR(200) NOT NULL,
+	id_director INT REFERENCES DIRECTOR(id_director) NOT NULL,
+	id_rating INT REFERENCES RATING(id_rating) NOT NULL,
+	id_pais INT REFERENCES PAIS_PRODUCCION(id_pais) NOT NULL,
+	id_genero INT REFERENCES GENERO_TITULO(id_genero) NOT NULL,
+	fecha_produccion DATE NOT NULL,
+	id_tipo INT REFERENCES TIPO(id_tipo) NOT NULL
+)
+
+GO
+
+CREATE TABLE ELENCO_TITULO(
+	id_actor INT REFERENCES ACTORES(id_actor) NOT NULL,
+	id_titulo INT REFERENCES TITULO(id_titulo) NOT NULL
+)
+
+GO
+
+CREATE TABLE PLAYLIST(
+	id_playlist int IDENTITY(1,1) primary key NOT NULL,
+	nombre_playlist VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE ESTADO_VISUALIZACION(
+	id_estado int IDENTITY(1,1) primary key NOT NULL,
+	nombre_estado VARCHAR(50) NOT NULL
+)
+
+GO
+
+CREATE TABLE PLAYLIST_LISTADO(
+	id_titulo INT REFERENCES TITULO(id_titulo) NOT NULL,
+	id_playlist INT REFERENCES PLAYLIST(id_playlist) NOT NULL,
+	id_estado INT REFERENCES ESTADO_VISUALIZACION(id_estado) NOT NULL
+)
+
+GO
+
+CREATE TABLE USUARIO(
+	id_usuario int IDENTITY(1,1) primary key NOT NULL,
+	nombre_usuario VARCHAR(50) NOT NULL,
+	clave VARCHAR(12) NOT NULL,
+	correo VARCHAR(12) UNIQUE NOT NULL,
+	id_playlist INT UNIQUE REFERENCES PLAYLIST(id_playlist) NOT NULL
+)
+
+GO
+
