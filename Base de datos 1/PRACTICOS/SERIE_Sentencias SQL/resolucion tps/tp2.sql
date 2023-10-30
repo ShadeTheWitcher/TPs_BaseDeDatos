@@ -126,6 +126,286 @@ ORDER BY idprovincia, idlocalidad DESC;
 --
 
 
+--eje 16 Sobre la consulta anterior mostrar los importes repetidos.
+
+SELECT TOP 697 WITH TIES *
+FROM gasto
+ORDER BY importe DESC;
+
+--ej 17
+SELECT idgasto, idprovincia, idlocalidad, idconsorcio, periodo, fechapago, idtipogasto,
+       CASE
+           WHEN importe < 10000 THEN importe * 1.15
+           WHEN importe BETWEEN 10000 AND 20000 THEN importe * 1.10
+           ELSE importe * 1.05
+       END AS importe_con_incremento
+FROM gasto
+ORDER BY importe_con_incremento DESC;
+
+
+--ej 18 Informar la cantidad de administradores masculinos y femeninos (sexo = ‘M’ y sexo = ‘F’)
+
+-- COUNT se utiliza para contar registros, no para evaluar condiciones.
+SELECT 
+    SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS Masculino,
+    SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS Femenino
+FROM administrador;
+
+--Utilizamos la función SUM junto con una expresión condicional para contar los administradores masculinos y femeninos por separado.
+--La expresión CASE evalúa si la columna "sexo" es igual a 'M' o 'F' y, en función de esa evaluación, suma 1 si se cumple la condición o 0 si no se cumple.
+
+
+
+--eje 19 Informar la suma total de gastos, la cantidad de gastos y el promedio del mismo. Utilizar Sum,Count y Avg
+SELECT
+    SUM(importe) AS "Suma Total de Gastos",
+    COUNT(idgasto) AS "Cantidad de Gastos",
+    AVG(importe) AS "Promedio de Gastos"
+FROM gasto;
+
+--Utilizamos la función SUM(importe) para calcular la suma total de los importes de gastos.
+--Utilizamos la función COUNT(idgasto) para contar la cantidad de registros de gastos.
+--Utilizamos la función AVG(importe) para calcular el promedio de los importes de gastos.
+
+--eje 20
+-- a) Mostrar el importe total acumulado de gasto por tipo de gasto
+SELECT idtipogasto AS "ID Tipo de Gasto", SUM(importe) AS "Importe Total Acumulado"
+FROM gasto
+GROUP BY idtipogasto
+
+--b) Sobre la consulta anterior, listar solo aquellos gastos cuyos importes sean superior a
+--2.000.000.
+SELECT idtipogasto AS "ID Tipo de Gasto", SUM(importe) AS "Importe Total Acumulado"
+FROM gasto
+GROUP BY idtipogasto
+HAVING SUM(importe) > 2000000;
+
+--c) Listar solamente los dos (2) tipos de gastos con menor importe acumulado.
+SELECT TOP 2 idtipogasto AS "ID Tipo de Gasto", SUM(importe) AS "Importe Total Acumulado"
+FROM gasto
+GROUP BY idtipogasto
+ORDER BY SUM(importe) ASC;
+
+--eje 21 Mostrar por cada tipo de gasto, el importe del mayor gasto realizado.
+SELECT
+    idtipogasto AS "ID Tipo de Gasto",
+    MAX(importe) AS "Mayor Gasto Realizado"
+FROM
+    gasto
+GROUP BY
+    idtipogasto;
+
+--otr forma usando 2 tablas
+SELECT 
+    tg.idtipogasto AS "ID Tipo de Gasto",
+    tg.descripcion AS "Descripción Tipo de Gasto",
+    (SELECT MAX(importe) FROM gasto WHERE idtipogasto = tg.idtipogasto) AS "Mayor Gasto Realizado"
+FROM
+    tipogasto AS tg;
+
+
+-- otra forma de hacer el 21 usando 2 tablas
+SELECT
+    tg.idtipogasto AS "ID Tipo de Gasto",
+    tg.descripcion AS "Descripción Tipo de Gasto",
+    (SELECT MAX(g.importe)
+     FROM gasto AS g
+     WHERE g.idtipogasto = tg.idtipogasto) AS "Mayor Gasto Realizado"
+FROM tipogasto AS tg;
+
+--eje 22 Mostrar el promedio de gasto por tipo de gasto, solo para aquellos pertenecientes al 1er
+--semestre (períod del 1 al 6).
+
+SELECT
+    idtipogasto AS "ID Tipo de Gasto",
+    AVG(importe) AS "Promedio de Gasto"
+FROM
+    gasto
+WHERE
+    DATEPART(MONTH, fechapago) BETWEEN 1 AND 6
+GROUP BY
+    idtipogasto;
+
+
+--forma mas detallada de mostrar
+SELECT
+    tg.idtipogasto AS "ID Tipo de Gasto",
+    tg.descripcion AS "Descripción Tipo de Gasto",
+    AVG(g.importe) AS "Promedio de Gasto"
+FROM
+    tipogasto AS tg
+JOIN
+    gasto AS g ON tg.idtipogasto = g.idtipogasto
+WHERE
+    DATEPART(MONTH, g.fechapago) BETWEEN 1 AND 6
+GROUP BY
+    tg.idtipogasto, tg.descripcion;
+
+--eje 23  Mostrar la cantidad de consorcios concentrados por zonas. Solo para las zonas 2 (NORTE), 
+-- 3(SUR) y 4 (ESTE).
+
+SELECT 
+    c.idzona AS "ID Zona",
+    COUNT(c.idconsorcio) AS "Cantidad de Consorcios por Zona"
+FROM 
+    consorcio AS c
+WHERE 
+    c.idzona IN (2, 3, 4)
+GROUP BY  -- si o si se necesita group by cuando se usa un count
+    c.idzona;
+
+-- eje 24  Mostrar la cantidad de consorcios existentes por localidad. Visualizar la lista en forma
+--descendente por cantidad.
+
+
+-- no funciona
+SELECT 
+    c.idprovincia AS "ID provincia", 
+    c.idlocalidad as "id localidad"
+    COUNT(c.idconsorcio) AS "Cantidad de Consorcios por localidad"
+FROM 
+    consorcio AS c
+
+GROUP BY DESC --se debe usar un order by
+
+-- forma correcta
+SELECT 
+    c.idprovincia AS "ID Provincia",
+    c.idlocalidad AS "ID Localidad",
+    COUNT(c.idconsorcio) AS "Cantidad de Consorcios por Localidad"
+FROM 
+    consorcio AS c
+GROUP BY 
+    c.idprovincia, c.idlocalidad
+ORDER BY 
+    "Cantidad de Consorcios por Localidad" DESC;
+    
+
+-- eje 25 Mostrar la cantidad de conserjes agrupados por estado civil y edad. Mostrar un listado
+--ordenado.
+select
+    c.estciv as "estado civil",
+    DATEDIFF(YEAR, c.fechnac, GETDATE()) AS "Edad",
+    COUNT(*) AS "Cantidad de Conserjes"
+from 
+    conserje as c
+    group by
+        c.estciv, DATEDIFF(YEAR, c.fechnac, GETDATE())
+    order by 
+    "Edad" DESC, c.estciv;
+
+--eje 26 Mostrar el importe total acumulado de gasto por tipo de gasto. Mostrar las descripciones de
+--cada tipo de gasto de la tabla tipogasto.
+
+SELECT
+    tg.descripcion AS "Descripción Tipo de Gasto",
+    SUM(g.importe) AS "Importe Total Acumulado"
+FROM
+    tipogasto AS tg
+JOIN
+    gasto AS g ON tg.idtipogasto = g.idtipogasto
+GROUP BY
+    tg.descripcion;
+
+
+--eje 27 Mostrar los nombres de todos los consorcios y en que provincia y localidad esta cada uno.
+--Ordenados por Provincia, localidad y consorcio
+
+select 
+    c.nombre as "nombre Consorcio",
+    l.descripcion as "localidad",
+    p.descripcion as "provincia"
+from consorcio as c
+JOIN
+    localidad as l on c.idlocalidad = l.idlocalidad
+JOIN provincia as p on c.idprovincia =  p.idprovincia
+--group BY
+--    c.idconsorcio p.idprovincia, l.idlocalidad  --NO HACE FALTA
+order BY
+    p.descripcion, l.descripcion, c.nombre;
+--Utilizamos la cláusula ORDER BY para ordenar los resultados por "Provincia", "Localidad" y "Nombre Consorcio" en ese orden.
+
+--No es necesario usar la cláusula GROUP BY en este caso, ya que simplemente deseas listar los nombres de los consorcios 
+--junto con la provincia y localidad correspondientes.
+
+
+
+
+
+-- eje 28 Mostrar los 10 (diez) consorcios donde se registraron mayores gastos y a qué provincia
+--pertenecen.
+
+select top 10
+    c.nombre as "Consorcio",
+    p.descripcion as "Provincia",
+    sum(g.importe) as "Total Gastos"
+FROM consorcio as c 
+JOIN 
+    provincia as p on c.idprovincia =  p.idprovincia
+JOIN 
+    gasto AS g ON c.idconsorcio = g.idconsorcio
+
+GROUP BY
+    c.nombre, p.descripcion
+ORDER BY
+    "Total Gastos" DESC;
+
+
+
+
+
+
+
+--eje 29 Mostrar todas las provincias registradas. Para las que tengan consorcios mostrar a qué
+--localidad pertenecen. Todos con sus nombres respectivos. Ordene los resultados por Provincia,
+--localidad y consorcio.
+--Cuál es la provincia que no tiene consorcio asignado?
+
+SELECT
+    p.descripcion AS "Provincia",
+    l.descripcion AS "Localidad",
+    c.nombre AS "Consorcio"
+FROM
+    provincia AS p
+LEFT JOIN
+    localidad AS l ON p.idprovincia = l.idprovincia
+LEFT JOIN
+    consorcio AS c ON l.idprovincia = c.idprovincia AND l.idlocalidad = c.idlocalidad
+ORDER BY
+    "Provincia", "Localidad", "Consorcio"
+--Utilizamos una unión izquierda (LEFT JOIN) para unir las tablas provincia, localidad y consorcio. 
+--Esto garantiza que todas las provincias se incluyan en el resultado, incluso si no tienen consorcios asociados.
+
+
+--Eje 30 Mostrar los nombres de todos los conserjes. Para los que están asignados a algún consorcio
+--mostrar también ese nombre. Ordene por apellido y nombre.
+
+
+
+
+
+
+
+--Sabiendo que un conserje no puede estar asignado a más de un consorcio, como puede
+--verificar que la cantidad de registros devuelta por la consulta sea la correcta y cuál es esa
+--cantidad?
+
+
+
+
+
+--EJERCICIO 31 Inserte un registro en la tabla consorcio con los siguientes valores:
+--Idprovincia=1
+--Idlocalidad =1
+--Idconsorcio =3
+--Nombre ='EDIFICIO-113'
+--Direccion ='PARAGUAY Nº 630'
+--Idzona = 5
+--Idconserje = null
+--Idadmin = null
+--Mostrar los consorcios registrados, tengan o no tengan conserjes asignados.
+
+
 
 
 
