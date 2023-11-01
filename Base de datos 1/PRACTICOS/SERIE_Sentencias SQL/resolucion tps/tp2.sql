@@ -343,7 +343,7 @@ FROM consorcio as c
 JOIN 
     provincia as p on c.idprovincia =  p.idprovincia
 JOIN 
-    gasto AS g ON c.idconsorcio = g.idconsorcio
+    gasto AS g ON c.idconsorcio = g.idconsorcio --esta incompleto porq la clave tiene mas de 1 atributo entonces es inconsistente los resultados
 
 GROUP BY
     c.nombre, p.descripcion
@@ -352,7 +352,29 @@ ORDER BY
 
 
 
+-- otra forma
 
+SELECT TOP 10
+
+    C.nombre AS NombreConsorcio,
+
+    P.descripcion AS Provincia,
+
+    SUM(G.importe) AS TotalGasto
+
+FROM consorcio C
+
+INNER JOIN provincia P ON C.idprovincia = P.idprovincia -- inner join se usa si o si cuando hay mas de 1 relacion
+
+INNER JOIN gasto G ON C.idprovincia = G.idprovincia
+
+    AND C.idlocalidad = G.idlocalidad
+
+    AND C.idconsorcio = G.idconsorcio
+
+GROUP BY C.nombre, P.descripcion
+
+ORDER BY TotalGasto DESC;
 
 
 
