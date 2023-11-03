@@ -17,6 +17,8 @@ WHERE c.idzona IN (
 --mostrar los datos de los conserjes mayores a 50 años (ordenados de mayor a menor por edad)
 --que no estén asignados a estos consorcios.
 
+select
+    c.nombre, c.
 
 
 
@@ -26,5 +28,5 @@ WHERE c.idzona IN (
 
 
 
-
---Ejercicio Nº 3
+--Ejercicio Nº 3 Mostrar todos los tipos de gastos, y sus respectivas descripciones, que no fueron registrados en
+--toda la provincia de Buenos Aires para el mes de febrero del año 2015.
