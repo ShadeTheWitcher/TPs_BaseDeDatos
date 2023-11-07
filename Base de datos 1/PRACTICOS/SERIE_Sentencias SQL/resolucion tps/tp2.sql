@@ -399,6 +399,145 @@ ORDER BY
 --Esto garantiza que todas las provincias se incluyan en el resultado, incluso si no tienen consorcios asociados.
 
 
+
+
+
+--Mostrar provincia Con consorcio
+
+--cant: 83
+
+SELECT   
+
+   Provincia =  p.descripcion  ,
+
+   Localidad = l.descripcion ,
+
+   Consorcio = CON.nombre 
+
+FROM [dbo].[consorcio] CON
+
+	INNER JOIN [dbo].[localidad] L
+
+	ON CON.idprovincia = L.idlocalidad
+
+	AND CON.idprovincia = L.idprovincia
+
+	INNER JOIN [dbo].[provincia] P
+
+	ON L.idprovincia = p.idprovincia
+
+	ORDER BY p.descripcion, l.descripcion, CON.nombre;
+
+ 
+--codigo compañero
+--Mostrar provincia (aunque no tengan) Con consorcio
+
+--cant: 100
+
+SELECT   
+
+   Provincia =  p.descripcion  ,
+
+   Localidad = l.descripcion ,
+
+   Consorcio = CON.nombre 
+
+FROM [dbo].[consorcio] CON
+
+	LEFT JOIN [dbo].[localidad] L
+
+	ON CON.idprovincia = L.idlocalidad
+
+	AND CON.idprovincia = L.idprovincia
+
+	LEFT JOIN [dbo].[provincia] P
+
+	ON L.idprovincia = p.idprovincia
+
+	ORDER BY p.descripcion, l.descripcion, CON.nombre;
+
+
+--otro compañero
+SELECT p.descripcion AS Provincia,
+
+	l.descripcion AS Localidad,
+
+	c.nombre AS Consorcio
+
+FROM provincia AS p
+
+LEFT JOIN consorcio AS c
+
+ON c.idprovincia = p.idprovincia
+
+LEFT JOIN localidad AS l
+
+ON c.idprovincia = l.idprovincia AND c.idlocalidad = l.idlocalidad
+
+ORDER BY p.descripcion, l.descripcion, c.nombre;
+
+--otro 
+
+SELECT p.descripcion AS Provincia,
+
+	l.descripcion AS Localidad,
+
+	c.nombre AS Consorcio
+
+FROM provincia AS p
+
+LEFT JOIN consorcio AS c
+
+ON c.idprovincia = p.idprovincia
+
+LEFT JOIN localidad AS l
+
+ON c.idprovincia = l.idprovincia AND c.idlocalidad = l.idlocalidad
+
+ORDER BY p.descripcion, l.descripcion, c.nombre;
+
+
+--otro
+
+SELECT *
+
+FROM provincia P
+
+LEFT JOIN consorcio C 
+
+ON P.idprovincia = C.idprovincia
+
+WHERE C.idprovincia IS NULL
+
+
+--con subconsulta
+
+select * from provincia p
+
+where p.idprovincia not in (
+
+    select distinct c.idprovincia 
+    from consorcio c
+
+)
+
+
+-- otro sub
+SELECT p.descripcion AS Provincia
+
+FROM provincia p
+
+WHERE NOT EXISTS ( --donde no exista una provincia con consorcio
+
+    SELECT 1 --en vez de 1 se pone NULL
+
+    FROM consorcio c
+
+    WHERE c.idprovincia = p.idprovincia
+
+);
+
+
 --Eje 30 Mostrar los nombres de todos los conserjes. Para los que están asignados a algún consorcio
 --mostrar también ese nombre. Ordene por apellido y nombre.
 
