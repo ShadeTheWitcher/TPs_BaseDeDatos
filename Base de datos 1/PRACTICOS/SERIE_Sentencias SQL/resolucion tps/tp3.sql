@@ -141,3 +141,49 @@ WHERE a.edad < (
     )
 );
 
+--Ejercicio Nº 10
+--Mostrar los datos del administrador correspondiente al consorcio que tenga menor
+--gasto acumulado en el año (2015) en concepto de 'servicios'
+
+select c.idadmin, a.apeynom as nombre_administrador
+from consorcio as c
+inner join administrador as a on c.idadmin = a.idadmin
+where c.idadmin in (
+    select top 1 idconsorcio
+    from gasto
+    where year(fechapago) = 2015
+        and idtipogasto = (select idtipogasto FROM tipogasto where descripcion = 'Servicios')
+        group by idconsorcio
+        order by sum(importe)
+);
+
+
+
+
+--Ejercicio Nº 11
+--Calcular el promedio de gasto anual (año 2015) por consorcio en concepto de
+--'sueldos', y mostrar los consorcios que superen ese monto en este ítem de gasto en el
+--mismo año.
+
+select c.idconsorcio, c.nombre as consorcio, sum(g.importe) as gasto total
+from consorcio as c
+left join gasto as g on c.Idconsorcio = g.Idconsorcio
+where 
+    select 
+
+
+--solucion 1
+SELECT c.idconsorcio, c.nombre AS nombre_consorcio
+FROM consorcio AS c
+WHERE (
+    SELECT SUM(importe)
+    FROM gasto
+    WHERE YEAR(fechapago) = 2015
+      AND idtipogasto = (SELECT idtipogasto FROM tipogasto WHERE descripcion = 'sueldos')
+      AND idconsorcio = c.idconsorcio
+    ) > (
+    SELECT AVG(importe)
+    FROM gasto
+    WHERE YEAR(fechapago) = 2015
+      AND idtipogasto = (SELECT idtipogasto FROM tipogasto WHERE descripcion = 'sueldos')
+    );
