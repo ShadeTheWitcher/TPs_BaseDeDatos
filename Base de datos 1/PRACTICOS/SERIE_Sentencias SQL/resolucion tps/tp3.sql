@@ -187,3 +187,67 @@ WHERE (
     WHERE YEAR(fechapago) = 2015
       AND idtipogasto = (SELECT idtipogasto FROM tipogasto WHERE descripcion = 'sueldos')
     );
+
+
+
+
+--Ejercicio complementario
+--Generar un listado de todos los consorcios (una fila por consorcio), con el gasto total acumulado (histórico), y el año con mayor gasto anual registrado.
+
+-------------------------------------------------------------------------------------------
+--Nombre Consorcio | Total Gasto Acumulado | Año con mayor gasto  
+-------------------------------------------------------------------------------------------
+--Es IMPORTANTE, que junto a la propuesta de resolución, incluyan consultas que demuestren o validen el resultado logrado.
+
+	SELECT
+   -- c.idprovincia,
+    --c.idlocalidad,
+    --c.idconsorcio,
+    c.nombre AS "Nombre Consorcio",
+    COALESCE(SUM(g.importe), 0) AS "Total Gasto Acumulado", --Coalesece devuelve 0 si el consorcio tiene un gasto  null para no afectar la suma
+    (
+        SELECT TOP 1 YEAR(fechapago) AS YearConMaxGasto
+        FROM gasto
+        WHERE
+            idprovincia = c.idprovincia
+            AND idlocalidad = c.idlocalidad
+            AND idconsorcio = c.idconsorcio
+        GROUP BY YEAR(fechapago)
+        ORDER BY SUM(importe) DESC
+    ) AS "Año con Mayor Gasto"
+FROM
+    consorcio c
+LEFT JOIN
+    gasto g ON c.idprovincia = g.idprovincia
+               AND c.idlocalidad = g.idlocalidad
+               AND c.idconsorcio = g.idconsorcio
+GROUP BY
+    c.idprovincia, c.idlocalidad, c.idconsorcio, c.nombre;
+
+
+--sin coalesce funciona igual porq no hay nulos en gasto.importe
+
+	SELECT
+   -- c.idprovincia,
+    --c.idlocalidad,
+    --c.idconsorcio,
+    c.nombre AS "Nombre Consorcio",
+    SUM(g.importe) AS "Total Gasto Acumulado", 
+    (
+        SELECT TOP 1 YEAR(fechapago) AS YearConMaxGasto
+        FROM gasto
+        WHERE
+            idprovincia = c.idprovincia
+            AND idlocalidad = c.idlocalidad
+            AND idconsorcio = c.idconsorcio
+        GROUP BY YEAR(fechapago)
+        ORDER BY SUM(importe) DESC
+    ) AS "Año con Mayor Gasto"
+FROM
+    consorcio c
+LEFT JOIN
+    gasto g ON c.idprovincia = g.idprovincia
+               AND c.idlocalidad = g.idlocalidad
+               AND c.idconsorcio = g.idconsorcio
+GROUP BY
+    c.idprovincia, c.idlocalidad, c.idconsorcio, c.nombre;
