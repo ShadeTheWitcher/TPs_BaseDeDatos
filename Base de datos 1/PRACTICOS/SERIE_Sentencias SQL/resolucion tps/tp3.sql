@@ -12,28 +12,25 @@ WHERE c.idzona IN (
     ORDER BY COUNT(*) DESC
 );
 
+--s
+
+select p.descripcion as provincia, l.descripcion as localidad, c.nombre as consorcio, c.direccion, z.descripcion as zona
+from consorcio
+inner join localidad l on c.idprovincia = l.idprovincia and c.idlocalidad = l.idlocalidad
+inner join provincia p on c.idprovincia = p.idprovincia
+inner join zona z on c.idzona = z.idzona
+where c.idzona in (
+    select top 2 idzona
+    from consorcio
+    group by idzona
+    order by count(*) desc
+)
+
+
 --Ejercicio Nº 2
 --Seleccionar los consorcios que pertenezcan a la provincia con mayor número de habitantes, y
 --mostrar los datos de los conserjes mayores a 50 años (ordenados de mayor a menor por edad)
 --que no estén asignados a estos consorcios.
-
-WITH ProvinciaMaxPoblacion AS (
-    SELECT TOP 1 c.idprovincia
-    FROM consorcio AS c
-    INNER JOIN provincia AS p ON c.idprovincia = p.idprovincia
-    GROUP BY c.idprovincia
-    ORDER BY SUM(p.poblacion) DESC
-)
-
-SELECT c.idprovincia, c.idlocalidad, c.nombre AS nombre_consorcio, c.direccion, c.idzona,
-       con.idconserje, con.apeynom AS nombre_conserje, con.fechnac
-FROM consorcio AS c
-INNER JOIN ProvinciaMaxPoblacion AS pmp ON c.idprovincia = pmp.idprovincia
-LEFT JOIN conserje AS con ON c.idconserje = con.idconserje
-WHERE (DATEDIFF(YEAR, con.fechnac, GETDATE()) > 50 OR con.idconserje IS NULL)
-ORDER BY c.idprovincia, c.idlocalidad, nombre_consorcio, c.direccion, c.idzona, con.fechnac DESC;
-
-
 
 WITH ProvinciaMaxPoblacion AS (
     SELECT TOP 1 WITH TIES c.idprovincia
@@ -49,6 +46,19 @@ INNER JOIN ProvinciaMaxPoblacion AS pmp ON c.idprovincia = pmp.idprovincia
 LEFT JOIN conserje AS co ON c.idconserje = co.idconserje
 WHERE (DATEDIFF(YEAR, co.fechnac, GETDATE()) > 50) AND co.idconserje IS NULL
 ORDER BY c.idprovincia, c.idlocalidad, nombre_consorcio, c.direccion, c.idzona, co.fechnac DESC;
+
+
+--sin with
+SELECT c.idprovincia, c.idlocalidad, c.nombre AS nombre_consorcio, c.direccion, c.idzona,
+       con.idconserje, con.apeynom AS nombre_conserje, con.fechnac
+FROM consorcio AS c
+LEFT JOIN conserje AS con ON c.idconserje = con.idconserje
+WHERE 
+    c.idprovincia = (SELECT TOP 1 idprovincia FROM consorcio GROUP BY idprovincia ORDER BY SUM(idprovincia) DESC) AND
+    (DATEDIFF(YEAR, con.fechnac, GETDATE()) > 50 OR con.idconserje IS NULL)
+ORDER BY c.idprovincia, c.idlocalidad, nombre_consorcio, c.direccion, c.idzona, con.fechnac DESC;
+
+
 
 
 --Ejercicio Nº 3
