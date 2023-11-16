@@ -111,9 +111,23 @@ WHERE g.idgasto IS NULL;
 --Ejercicio Nº 7
 --Mostrar en un solo registro, la cantidad de consorcios que realizaron al menos un
 --gasto (variante con combinaciones y con subconsulta)
-SELECT COUNT(DISTINCT c.idconsorcio) AS cantidad_consorcios
+SELECT COUNT(DISTINCT c.idconsorcio) AS cantidad_consorcios -- distinct elimina duplicados
 FROM consorcio AS c
 INNER JOIN gasto AS g ON c.idprovincia = g.idprovincia AND c.idlocalidad = g.idlocalidad AND c.idconsorcio = g.idconsorcio;
+
+-- Ejercicio Nº 7 con subconsulta
+SELECT COUNT(DISTINCT idconsorcio) AS cantidad_consorcios
+FROM consorcio
+WHERE idconsorcio IN (
+    SELECT DISTINCT g.idconsorcio
+    FROM gasto g
+    WHERE consorcio.idprovincia = g.idprovincia
+    AND consorcio.idlocalidad = g.idlocalidad
+    AND consorcio.idconsorcio = g.idconsorcio
+);
+
+
+
 
 --Ejercicio Nº 8
 --Mostrar los administradores que no están asignados a ningún consorcio (variante con
